@@ -52,6 +52,10 @@ class ThemedApp extends StatefulWidget {
     _print("no state for type $_ThemedAppState");
     return false;
   }
+
+  static bool isDark(BuildContext context) {
+    return context.findAncestorStateOfType<_ThemedAppState>()?._isDark ?? false;
+  }
 }
 
 void _print(data) {
@@ -60,9 +64,9 @@ void _print(data) {
 
 class _ThemedAppState extends State<ThemedApp> {
   Completer<Directory> _directoryCompleter = Completer();
-  Brightness? brightness;
   bool _initDone = false;
   final _streamController = StreamController<bool>();
+  bool? _isDark = false;
 
   @override
   void dispose() {
@@ -129,6 +133,7 @@ class _ThemedAppState extends State<ThemedApp> {
       stream: _streamController.stream,
       builder: (context, snap) {
         final data = snap.data;
+        _isDark = data;
         return MaterialApp(
           title: widget.title ?? "",
           debugShowCheckedModeBanner: false,
