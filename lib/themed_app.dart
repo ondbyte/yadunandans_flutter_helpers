@@ -14,7 +14,7 @@ class ThemedApp extends StatefulWidget {
   final Future<Directory> Function() directoryToPersistData;
 
   ///initalizer is to initialize things like dependency injection
-  final Future Function()? initializer;
+  final Future Function(BuildContext)? initializer;
 
   ///additional delay so you can show splash for longer
   final Duration additionalDelay;
@@ -77,17 +77,14 @@ class _ThemedAppState extends State<ThemedApp> {
   @override
   void initState() {
     _directoryCompleter.complete(widget.directoryToPersistData());
-    _asyncInit();
     super.initState();
   }
 
-  void _asyncInit() async {
-    await widget.initializer?.call();
+  Future _asyncInit(BuildContext context) async {
+    await widget.initializer?.call(context);
     await Future.delayed(widget.additionalDelay);
     _getPersistenceDark().then((value) => _streamController.add(value));
-    setState(() {
-      _initDone = true;
-    });
+    _initDone = true;
   }
 
   Future<bool> _darken() {
@@ -144,8 +141,12 @@ class _ThemedAppState extends State<ThemedApp> {
           darkTheme: widget.darkTheme,
           home: Builder(
             builder: (context) {
-              print("building home");
-              return widget.builder(context, _initDone);
+              return FutureBuilder(
+                future: _asyncInit(context),
+                builder: (context, snap) {
+                  return widget.builder(context, _initDone);
+                },
+              );
             },
           ),
         );
