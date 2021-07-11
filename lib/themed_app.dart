@@ -64,6 +64,7 @@ void _print(data) {
 
 class _ThemedAppState extends State<ThemedApp> {
   Completer<Directory> _directoryCompleter = Completer();
+  Completer _initCompleter = Completer();
   bool _initDone = false;
   final _streamController = StreamController<bool>();
   bool? _isDark = false;
@@ -142,7 +143,12 @@ class _ThemedAppState extends State<ThemedApp> {
           home: Builder(
             builder: (context) {
               return FutureBuilder(
-                future: _asyncInit(context),
+                future: () async {
+                  if (!_initCompleter.isCompleted) {
+                    _initCompleter.complete(_asyncInit(context));
+                  }
+                  return _initCompleter.future;
+                }(),
                 builder: (context, snap) {
                   return widget.builder(context, _initDone);
                 },
